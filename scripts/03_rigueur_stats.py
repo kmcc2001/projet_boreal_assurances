@@ -7,10 +7,10 @@ def run_statistiques_descriptives():
     db_path = "data/boreal_warehouse.duckdb"
     con = duckdb.connect(db_path)
     
-    print("--- ETAPE 3 : RIGUEUR STATISTIQUE DESCRIPTIVE ---\n")
+    print("=== LIVRABLE 3 - ÉTAPE 3 : RIGUEUR STATISTIQUE DESCRIPTIVE ===\n")
 
     # 1. INTERVALLES DE CONFIANCE (IC 95%)
-    print("Intervalles de Confiance à 95% pour les indicateurs clés :")
+    print("📌 1. Intervalles de Confiance à 95% pour les indicateurs clés :")
     query_ic = """
         SELECT 
             COUNT(DISTINCT fc.contrat_sk) AS N_contrats,
@@ -43,11 +43,11 @@ def run_statistiques_descriptives():
     se_cout = np.std(costs, ddof=1) / np.sqrt(len(costs))
     ic_cout_low, ic_cout_high = cout_moyen - 1.96 * se_cout, cout_moyen + 1.96 * se_cout
 
-    print(f"Fréquence moyenne : {freq:.4f} (IC 95% : [{ic_freq_low:.4f} ; {ic_freq_high:.4f}])")
-    print(f"Coût moyen : {cout_moyen:.2f} € (IC 95% : [{ic_cout_low:.2f} € ; {ic_cout_high:.2f} €])\n")
+    print(f" • Fréquence moyenne : {freq:.4f} (IC 95% : [{ic_freq_low:.4f} ; {ic_freq_high:.4f}])")
+    print(f" • Coût moyen : {cout_moyen:.2f} € (IC 95% : [{ic_cout_low:.2f} € ; {ic_cout_high:.2f} €])\n")
 
     # 2. TESTS D'HYPOTHÈSES
-    print("Tests statistiques d'hypothèses :")
+    print("📌 2. Tests statistiques d'hypothèses :")
     
     # Test 1: Comparaison de Fréquence entre Zone 1 et Zone 4
     query_zones = """
@@ -76,11 +76,11 @@ def run_statistiques_descriptives():
     p_val_z = 2 * (1 - stats.norm.cdf(abs(z_stat)))
 
     print(f" [Test 1 - Fréquence Zone 1 vs Zone 4]")
-    print(f"Freq Z1: {p1:.4f} | Freq Z4: {p4:.4f}")
-    print(f"Test Z (Deux proportions) : Z = {z_stat:.4f}, p-value = {p_val_z:.4e}")
-    print(f"Conclusion : {'Différence significative' if p_val_z < 0.05 else 'Pas de différence significative'}\n")
+    print(f"   - Freq Z1: {p1:.4f} | Freq Z4: {p4:.4f}")
+    print(f"   - Test Z (Deux proportions) : Z = {z_stat:.4f}, p-value = {p_val_z:.4e}")
+    print(f"   - Conclusion : {'Différence significative' if p_val_z < 0.05 else 'Pas de différence significative'}\n")
 
-    # Test 2: Comparaison dynamique du Coût Moyen entre les 2 principaux canaux
+    # Test 2: Comparaison du Coût Moyen entre Canal Agent et Canal Web (utilisant d.canal)
     query_chan_costs = """
         SELECT 
             CAST(d.canal AS VARCHAR) AS canal_distribution,
@@ -89,23 +89,18 @@ def run_statistiques_descriptives():
         JOIN dwh.fait_contrats fc ON fs.contrat_sk = fc.contrat_sk
         JOIN dwh.dim_contrats d ON fc.contrat_sk = d.contrat_sk
         LEFT JOIN dwh.fait_reglements fr ON fs.sinistre_id = fr.sinistre_id
+        WHERE CAST(d.canal AS VARCHAR) IN ('Agent', 'Web')
         GROUP BY fs.sinistre_id, CAST(d.canal AS VARCHAR)
     """
     df_chan = con.execute(query_chan_costs).fetchdf()
-    canaux_populaires = df_chan['canal_distribution'].value_counts().index[:2]
-    
-    if len(canaux_populaires) >= 2:
-        c1, c2 = canaux_populaires[0], canaux_populaires[1]
-        costs_c1 = df_chan[df_chan['canal_distribution'] == c1]['charge'].values
-        costs_c2 = df_chan[df_chan['canal_distribution'] == c2]['charge'].values
+    costs_agent = df_chan[df_chan['canal_distribution'] == 'Agent']['charge'].values
+    costs_web = df_chan[df_chan['canal_distribution'] == 'Web']['charge'].values
 
-        stat_mw, p_val_mw = stats.mannwhitneyu(costs_c1, costs_c2, alternative='two-sided')
-        print(f" [Test 2 - Coût Moyen Canal {c1} vs {c2}]")
-        print(f"Coût Moyen {c1}: {np.mean(costs_c1):.2f} € | Coût Moyen {c2}: {np.mean(costs_c2):.2f} €")
-        print(f"Test de Mann-Whitney U : Stat = {stat_mw:.1f}, p-value = {p_val_mw:.4e}")
-        print(f"Conclusion : {'Différence significative' if p_val_mw < 0.05 else 'Pas de différence significative'}\n")
-    else:
-        print(" [Test 2] Impossible de comparer : pas assez de canaux distincts trouvés.\n")
+    stat_mw, p_val_mw = stats.mannwhitneyu(costs_agent, costs_web, alternative='two-sided')
+    print(f" [Test 2 - Coût Moyen Canal Agent vs Canal Web]")
+    print(f"   - Coût Moyen Agent: {np.mean(costs_agent):.2f} € | Coût Moyen Web: {np.mean(costs_web):.2f} €")
+    print(f"   - Test de Mann-Whitney U : Stat = {stat_mw:.1f}, p-value = {p_val_mw:.4e}")
+    print(f"   - Conclusion : {'Différence significative' if p_val_mw < 0.05 else 'Pas de différence significative'}\n")
 
     # 3. QUEUE DE DISTRIBUTION DES COÛTS
     print("📌 3. Description de la queue de distribution des coûts de sinistres :")
@@ -121,10 +116,10 @@ def run_statistiques_descriptives():
     part_top1 = np.sum(costs[costs >= top_1_pct_val]) / np.sum(costs) * 100
     part_top5 = np.sum(costs[costs >= top_5_pct_val]) / np.sum(costs) * 100
 
-    print(f"Médiane (P50) : {p50:.2f} €")
-    print(f"Quantiles : P75 = {p75:.2f} € | P90 = {p90:.2f} € | P95 = {p95:.2f} € | P99 = {p99:.2f} €")
-    print(f"Part du TOP 5% des sinistres les plus chers : {part_top5:.2f} % de la charge totale")
-    print(f"Part du TOP 1% des sinistres les plus chers : {part_top1:.2f} % de la charge totale")
+    print(f" • Médiane (P50) : {p50:.2f} €")
+    print(f" • Quantiles : P75 = {p75:.2f} € | P90 = {p90:.2f} € | P95 = {p95:.2f} € | P99 = {p99:.2f} €")
+    print(f" • Part du TOP 5% des sinistres les plus chers : {part_top5:.2f} % de la charge totale")
+    print(f" • Part du TOP 1% des sinistres les plus chers : {part_top1:.2f} % de la charge totale")
 
     con.close()
 
