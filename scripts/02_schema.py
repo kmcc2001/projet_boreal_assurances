@@ -24,7 +24,7 @@ def run_star_schema():
             email_hash
         FROM prep.crm_clients_dedup;
     """)
-    print("✓ Dimension dim_clients créée.")
+    print("Dimension dim_clients créée.")
 
     
     # 2. DIMENSION CONTRATS (`dim_contrats`)
@@ -40,7 +40,7 @@ def run_star_schema():
             zone_risque
         FROM prep.contrats;
     """)
-    print("✓ Dimension dim_contrats créée.")
+    print("Dimension dim_contrats créée.")
 
     
     # 3. DIMENSION TEMPS (`dim_temps`)
@@ -62,7 +62,7 @@ def run_star_schema():
             strftime(date_val, '%A') AS jour_semaine
         FROM dates;
     """)
-    print("✓ Dimension dim_temps créée.")
+    print("Dimension dim_temps créée.")
 
     
     # 4. TABLE DE FAITS : CONTRATS (`fait_contrats`)
@@ -85,7 +85,7 @@ def run_star_schema():
         LEFT JOIN dwh.dim_temps t_eff ON ct.date_effet = t_eff.date_complete
         LEFT JOIN dwh.dim_temps t_res ON ct.date_resiliation = t_res.date_complete;
     """)
-    print("✓ Table de faits fait_contrats créée.")
+    print("Table de faits fait_contrats créée.")
 
     
     # 5. TABLE DE FAITS : SINISTRES (`fait_sinistres`)
@@ -106,7 +106,7 @@ def run_star_schema():
         LEFT JOIN dwh.dim_temps t_surv ON s.date_survenance = t_surv.date_complete
         LEFT JOIN dwh.dim_temps t_decl ON s.date_declaration = t_decl.date_complete;
     """)
-    print("✓ Table de faits fait_sinistres créée.")
+    print("Table de faits fait_sinistres créée.")
 
 
     # 6. TABLE DE FAITS : REGLEMENTS (`fait_reglements`)
@@ -121,7 +121,7 @@ def run_star_schema():
         FROM prep.reglements r
         LEFT JOIN dwh.dim_temps t_pai ON r.date_paiement = t_pai.date_complete;
     """)
-    print("✓ Table de faits fait_reglements créée.")
+    print("Table de faits fait_reglements créée.")
 
     # Bilan rapide
     print("\n   Bilan du Schéma en Étoile (DWH) :")

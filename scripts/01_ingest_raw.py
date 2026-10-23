@@ -24,7 +24,7 @@ def run_ingestion():
         """)
         print("CRM clients ingéré")
     else:
-        print(f"⚠️ Fichier introuvable : {crm_path}")
+        print(f"Fichier introuvable : {crm_path}")
 
     # 2. Contrats
     contrat_path = os.path.join(base_path, "contrats", "contrats.csv")
@@ -36,7 +36,7 @@ def run_ingestion():
         """)
         print("Contrats ingérés")
     else:
-        print(f"⚠️ Fichier introuvable : {contrat_path}")
+        print(f"Fichier introuvable : {contrat_path}")
 
     # 3. Sinistres
     sinistre_path = os.path.join(base_path, "sinistres", "sinistres.jsonl")
@@ -48,7 +48,7 @@ def run_ingestion():
         """)
         print("Sinistres ingérés")
     else:
-        print(f"⚠️ Fichier introuvable : {sinistre_path}")
+        print(f"Fichier introuvable : {sinistre_path}")
 
     # 4. Antifraude
     audit_path = os.path.join(base_path, "antifraude", "audits.csv")
@@ -60,7 +60,7 @@ def run_ingestion():
         """)
         print("Audits antifraude ingérés")
     else:
-        print(f"⚠️ Fichier introuvable : {audit_path}")
+        print(f"Fichier introuvable : {audit_path}")
 
     # 5. Règlements
     reglement_pattern = os.path.join(base_path, "reglements", "reglements_*.csv")
@@ -75,9 +75,9 @@ def run_ingestion():
                    filename AS _source_file
             FROM read_csv_auto('{reglement_pattern}', union_by_name=true, filename=true, header=True);
         """)
-        print(f"✓ {len(reglement_files)} fichiers de règlements mensuels ingérés avec succès.")
+        print(f"{len(reglement_files)} fichiers de règlements mensuels ingérés avec succès.")
     else:
-        print(f"⚠️ Aucun fichier de règlement trouvé avec le pattern : {reglement_pattern}")
+        print(f"Aucun fichier de règlement trouvé avec le pattern : {reglement_pattern}")
 
     con.close()
     print("--- Ingestion brute terminée avec succès ---")
