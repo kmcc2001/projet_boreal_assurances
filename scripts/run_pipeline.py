@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 
 def run_step(script_name, description):
-    """Exécute un script Python et gère les erreurs."""
+    "Exécute un script Python et gère les erreurs."
     print(f"\n[INFO] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Démarrage : {description} ({script_name})")
     start_time = datetime.now()
     
@@ -24,7 +24,7 @@ def main():
     print("  LANCEMENT DU PIPELINE GLOBAL - BOREAL ASSURANCES")
     
     
-    # Définition des étapes successives du pipeline ETL
+    # Définition des étapes successives du pipeline
     steps = [
         ("scripts/01_ingest_raw.py", "Ingestion des données brutes"),
         ("scripts/02_quality_prep.py", "Préparation et nettoyage"),
